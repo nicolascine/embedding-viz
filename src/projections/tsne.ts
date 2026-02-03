@@ -25,11 +25,19 @@ export function tsne(data: number[][], options: TSNEOptions = {}): Point2D[] {
 
   const n = data.length
 
+  if (n < 3) {
+    // too few points for tsne, just return random layout
+    return data.map((_, i) => ({ x: Math.random(), y: Math.random(), index: i }))
+  }
+
+  // clamp perplexity to reasonable range for dataset size
+  const effectivePerplexity = Math.min(perplexity, Math.floor(n / 3))
+
   // compute pairwise distances
   const distances = computeDistances(data)
 
   // compute joint probabilities
-  const P = computeJointProbabilities(distances, perplexity)
+  const P = computeJointProbabilities(distances, effectivePerplexity)
 
   // initialize embedding randomly
   const Y: number[][] = Array.from({ length: n }, () => [
