@@ -1,66 +1,48 @@
 # embedding-viz
 
-Interactive visualization of embedding spaces in the browser. Load high-dimensional embeddings, project them to 2D using PCA or t-SNE, explore with pan/zoom/hover.
+Visualize embedding spaces in the browser. Drop in some vectors, see clusters.
 
-## Why
+I kept opening Python notebooks just to make a quick scatter plot of embeddings while working on search stuff. Got tired of context-switching, so I built this — runs entirely in the browser, no backend needed.
 
-I kept wanting to quickly visualize embeddings while working on semantic search and RAG projects. Existing tools either need Python (matplotlib, plotly) or are heavy web apps. I just wanted to paste some vectors and see them.
+### how to use
 
-## Features
-
-- PCA and t-SNE projection (pure JS, no dependencies)
-- Canvas-based renderer with pan, zoom, hover
-- Color coding by cluster/label
-- Load from JSON or generate demo data
-- Works with any dimensionality
-
-## Run
-
-```bash
+```
 npm install
 npm run dev
 ```
 
-## Data format
+Click "Load Demo Data" to see some clustered random embeddings, or load your own JSON file.
 
-JSON file with array of objects:
+### data format
+
+Array of objects with `label` and `vector`:
 
 ```json
 [
-  { "label": "cat", "vector": [0.1, 0.2, ...] },
-  { "label": "dog", "vector": [0.15, 0.18, ...] }
+  { "label": "cat", "vector": [0.1, 0.2, 0.3, ...] },
+  { "label": "dog", "vector": [0.15, 0.22, 0.28, ...] }
 ]
 ```
 
-Or the simple format:
+Works with any dimensionality. Tested up to 1536 (OpenAI ada-002 embeddings).
 
-```json
-{
-  "labels": ["cat", "dog"],
-  "vectors": [[0.1, 0.2], [0.15, 0.18]]
-}
-```
+### projections
 
-## Technical notes
+**PCA** — fast, deterministic. Good for getting a quick overview. Uses power iteration (my own implementation, not a library).
 
-The t-SNE implementation is a basic O(n²) version. It works fine for up to ~2000 points. For larger datasets, you'd want Barnes-Hut approximation or use UMAP instead. PCA uses power iteration which is fast but approximate.
+**t-SNE** — slower but shows local structure better. This is a basic O(n²) implementation so it starts lagging above ~2000 points. For larger datasets you'd want Barnes-Hut or UMAP.
 
-Both implementations are from scratch - no external dependencies. I wanted to understand the math, not just import a library.
+Both algorithms are implemented from scratch. I wanted to understand the math, not just call a function.
 
-## Controls
+### controls
 
-- Scroll to zoom
-- Drag to pan
-- Hover to see point labels
+- scroll to zoom
+- drag to pan
+- hover to see labels
+- sidebar to switch projection and tweak params
 
-## TODO
+### notes
 
-- [ ] UMAP projection
-- [ ] 3D mode with WebGL
-- [ ] Color by arbitrary metadata field
-- [ ] Export as SVG/PNG
-- [ ] Real embeddings via transformers.js
+the t-SNE perplexity parameter matters a lot. Low values (~5) show tight local clusters. High values (~50) show more global structure. Default is 30 which works ok for most cases.
 
-## License
-
-MIT
+colors are auto-assigned based on label prefix (everything before the first underscore). so if your labels are `animals_cat`, `animals_dog`, `vehicles_car`, the animals and vehicles groups get different colors.

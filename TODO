@@ -1,0 +1,6 @@
+- UMAP projection
+- 3D mode with WebGL
+- export as SVG
+- real embeddings via transformers.js
+- color picker for clusters
+- dark/light theme toggle
